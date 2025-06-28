@@ -69,7 +69,8 @@ export class CloneCommand {
 
   private async trySSHClone(repoUrl: string, fullTargetPath: string): Promise<boolean> {
     try {
-      console.log(chalk.blue('🔍 Discovering SSH keys...'));
+      // Remove or reduce debug/log output for cleaner CLI
+      // ... keep only essential user-facing messages and errors ...
       
       // Discover available SSH keys
       const sshKeys = await this.sshManager.discoverSSHKeys();
