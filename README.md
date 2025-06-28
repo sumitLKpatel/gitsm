@@ -151,7 +151,7 @@ This error means the SSH key you selected is not authorized for the repository.
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. See the `LICENSE` file for details.
+This project is licensed under the **[MIT License](https://github.com/sumitLKpatel/gitsm?tab=MIT-1-ov-file)**.
 
 --- 
 
