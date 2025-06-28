@@ -10,8 +10,8 @@ const program = new Command();
 
 program
   .name('gitsm')
-  .description('Git SSH Manager - Seamless SSH key management for repository')
-  .version('1.0.31', '-v, --version', 'Show version information');
+  .description('Git SSH Key Manager - Seamless SSH key management for repository')
+  .version('1.0.32', '-v, --version', 'Show version information');
 
 // Clone command
 program
@@ -64,7 +64,7 @@ program
   .command('help')
   .description('Show help information')
   .action(() => {
-    console.log(chalk.blue('🚀 Git SSH Manager (GITSM)'));
+    console.log(chalk.blue('🚀 Git SSH Key Manager (GITSM)'));
     console.log(chalk.gray('Seamless SSH key management per repository\n'));
     
     console.log(chalk.yellow('📖 Usage Examples:'));
@@ -79,7 +79,7 @@ program
 
 // Default action
 program.action(() => {
-  console.log(chalk.blue('🚀 Git SSH Manager'));
+  console.log(chalk.blue('🚀 Git SSH Key Manager'));
   console.log(chalk.gray('Run "gitsm help" for usage information'));
 });
 

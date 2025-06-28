@@ -1,4 +1,4 @@
-# Git SSH Manager (gitsm)
+# Git SSH Key Manager (gitsm)
 
 ![Git](https://img.shields.io/badge/git-F05032?style=flat&logo=git&logoColor=white)
 ![gitsm](https://img.shields.io/badge/gitsm-v1.0.0-blue)
