@@ -1,34 +1,16 @@
-# Git SSH Manager (gitsm) &nbsp; 
+# Git SSH Manager (gitsm)
+
 ![Git](https://img.shields.io/badge/git-F05032?style=flat&logo=git&logoColor=white)
 ![gitsm](https://img.shields.io/badge/gitsm-v1.0.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
-![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgrey?logo=windows&logoColor=blue)
+![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![node](https://img.shields.io/badge/node-%3E=18.x-brightgreen?logo=node.js)
 
+**🔐 SSH Key Management for Git, Simplified.**
 
-🔐 SSH Key Management for Git, Simplified 
+`gitsm` is a powerful Git wrapper that automatically configures different SSH keys for different repositories. No more editing `~/.ssh/config`, just clone and go.
 
-Automatically configure different SSH keys for different repositories using our powerful Git wrapper.  
-No more editing ~/.ssh/config—just clone and go.
-
-✅ Works just like Git. Use push, pull, commit, etc., without changing your workflow.
-
-🚀 Example
-
-```bash
-gitsm clone git@github.com:user/private-repo.git
-```
-→ Prompts you to select an existing SSH key from your ~/.ssh folder  
-→ Automatically links the key to this repo  
-→ Then you can now use Git as usual:
-
-```bash
-cd private-repo  
-git pull  
-git push  
-```
-
----
+--- 
 
 ## 🚩 Why gitsm?
 
@@ -39,21 +21,20 @@ git push
 
 **gitsm** is for you!
 
----
+--- 
 
 ## ✨ Features
 
-- 🔍 **Auto-discovery** of SSH keys in your `~/.ssh` directory
-- 🎯 **Per-repository SSH key configuration** (each repo can use a different key)
-- 🚀 **Smart cloning** with interactive SSH key selection
-- 🛠️ **Fix command** to repair broken SSH key configs
-- 📋 **Repository listing** with SSH key information
-- 🔐 **SSH key testing** to verify connectivity
-- 💾 **Configuration persistence** - remembers your choices
-- 🎨 **Beautiful CLI interface** with colors and emojis
-- 🪟 **Windows, macOS, and Linux support**
+- 🔍 **Auto-discovery** of SSH keys in your `~/.ssh` directory.
+- 🎯 **Per-repository SSH key configuration**—each repo can use a different key.
+- 🚀 **Smart cloning** with an interactive SSH key selection prompt.
+- 🛠️ **`fix` command** to repair broken or outdated SSH configurations.
+- 📋 **Repository listing** with associated SSH key information.
+- 🔐 **SSH key testing** to verify connectivity before use.
+- 💾 **Persistent configuration** that remembers your choices.
+- 🪟 **Full cross-platform support**: Windows, macOS, and Linux.
 
----
+--- 
 
 ## 📦 Installation
 
@@ -61,106 +42,121 @@ git push
 npm install -g gitsm
 ```
 
----
+--- 
 
 ## 🚀 Quick Start
 
-### 1. Clone a repository with SSH key selection
+### 1. Clone a Repository
+
+Run `gitsm clone` instead of `git clone`.
 
 ```bash
 gitsm clone git@github.com:username/repo.git
 ```
-- Discover all SSH keys in your `~/.ssh` directory
-- Select which key to use
-- Clone the repository and auto-configure it
 
-### 2. Clone to a specific directory
+`gitsm` will prompt you to select an SSH key from your `~/.ssh` directory. It then clones the repository and automatically configures it to use that key for all future Git operations (`pull`, `push`, `fetch`, etc.).
+
+### 2. Use Git as Usual
+
+Once cloned, you can use standard Git commands inside the repository.
 
 ```bash
-gitsm clone git@github.com:username/repo.git --dir /path/to/directory
+cd repo
+git pull
+git push
 ```
 
-### 3. List all managed repositories
+### 3. List Managed Repositories
+
+See all repositories configured with `gitsm`.
 
 ```bash
 gitsm list repos
 ```
 
-### 4. List all available SSH keys
+### 4. Fix a Repository's SSH Config
 
-```bash
-gitsm list keys
-```
+If you move your SSH keys or encounter a path error, `gitsm fix` can repair the configuration.
 
-### 5. Fix a repository's SSH config
-
-If you ever see SSH path errors or change your key, run:
 ```bash
 gitsm fix /path/to/your/repo
 ```
-This will repair the SSH config for that repo.
 
----
+--- 
 
 ## 📖 Usage
 
 ### Commands
 
-- `clone <repository-url> [options]`  
-  Clone a Git repository with SSH key selection.
-  - `--dir <directory>`: Specify target directory
-  - `--ssh`: Force SSH mode (default)
-  - `--https`: Force HTTPS mode
+- `clone <repo-url> [options]`
+  - Clones a Git repository and prompts for SSH key selection.
+  - `--dir <directory>`: Specify a target directory.
 
-- `list keys`  
-  List all available SSH keys.
+- `list keys`
+  - Lists all available SSH keys found in `~/.ssh`.
 
-- `list repos`  
-  List all repositories managed by gitsm.
+- `list repos`
+  - Lists all repositories managed by `gitsm`.
 
-- `fix <repoPath>`  
-  Fix SSH key configuration for a repository.
+- `fix <repoPath>`
+  - Repairs the SSH key configuration for a specific repository.
 
-- `help`  
-  Show help and usage examples.
+- `help`
+  - Shows help and usage examples.
 
----
+--- 
 
 ## 🛠️ Prerequisites
 
-- **Node.js** 16.0.0 or higher
-- **Git** installed and configured
-- **SSH keys** generated and added to your Git provider
+- **Node.js**: Version 18.x or higher.
+- **Git**: Must be installed and available in your system's PATH.
+- **SSH Keys**: You should have already generated SSH keys and added them to your Git provider (GitHub, GitLab, etc.).
 
----
-
-## 💡 Use Cases
-
-- **Multiple GitHub accounts**: Use a different key for work and personal projects.
-- **Different Git providers**: Use the right key for GitHub, GitLab, Bitbucket, etc.
-- **Team environments**: Onboard new team members with zero SSH config hassle.
-
----
+--- 
 
 ## 🔍 How It Works
 
-1. **SSH Key Discovery**: Scans `~/.ssh/` for private keys
-2. **Interactive Selection**: Presents a user-friendly selection menu
-3. **Repository Configuration**: Sets up Git config for the selected SSH key
-4. **Persistent Storage**: Saves configuration for future Git operations
+`gitsm` acts as a wrapper around Git. When you clone a repository, it:
+1.  **Discovers SSH Keys**: Scans your `~/.ssh` directory for private keys.
+2.  **Prompts for Selection**: Asks you to choose which key to associate with the repository.
+3.  **Configures Git**: Modifies the repository's local `.git/config` to set the `core.sshCommand` to point to the selected key.
+4.  **Delegates to Git**: All other commands are passed directly to Git, so your workflow remains unchanged.
 
----
+This approach avoids global configuration changes and provides fine-grained, per-repository control.
+
+--- 
 
 ## 🐛 Troubleshooting
 
-### Windows: SSH path errors
+### SSH Key Path Errors on Windows
 
-If you see:
+If you encounter an error like `Warning: Identity file C:Users... not accessible: No such file or directory`, it often means the path in your Git configuration is malformed.
+
+**Solution:**
+Run the `fix` command on the repository path.
+```bash
+gitsm fix C:\Users\YourUser\path\to\repo
 ```
-Warning: Identity file C:Users... not accessible: No such file or directory.
-```
-- Run `gitsm fix <repoPath>` to repair the config.
-- Make sure your SSH key path uses **forward slashes** and is **quoted** in `.git/config`:
-  ```
-  sshCommand = ssh -i "C:/Users/YourUser/.ssh/id_ed25519" ...
-  ```
+This command automatically corrects the path to use forward slashes (`/`) and ensures it is properly quoted, which is required for Git on Windows.
+
+### "Permission Denied (publickey)"
+
+This error means the SSH key you selected is not authorized for the repository.
+
+**Solutions:**
+1.  **Verify the Key**: Ensure you have added the public key (e.g., `id_ed25519.pub`) to your GitHub/GitLab account.
+2.  **Select the Correct Key**: Run `gitsm fix` and choose the correct key for the repository.
+
+--- 
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
+
+--- 
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to [open an issue](https://github.com/sumitLKpatel/gitsm/issues) or submit a pull request. Whether it's a bug report, feature request, or documentation improvement, all contributions are appreciated.
+
+**Made with ❤️ for developers who juggle multiple SSH keys.**
