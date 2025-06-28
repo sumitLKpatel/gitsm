@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { CloneCommand } from './commands/clone';
 import { ListCommand } from './commands/list';
+import { FixCommand } from './commands/fix';
 
 const program = new Command();
 
@@ -17,6 +18,7 @@ program
   .command('clone <repository>')
   .description('Clone a repository with SSH key selection')
   .option('--ssh', 'Force SSH clone (default behavior)')
+  .option('--https', 'Force HTTPS clone (fallback)')
   .option('-d, --dir <directory>', 'Target directory name')
   .action(async (repository: string, options) => {
     const cloneCmd = new CloneCommand();
@@ -44,6 +46,19 @@ listCmd
     await listCommand.listRepos();
   });
 
+// Register fix command
+program
+  .command('fix <repoPath>')
+  .description('Fix SSH key configuration for a repository')
+  .action(async (repoPath: string) => {
+    if (!repoPath) {
+      console.log(chalk.red('Please provide the path to the repository.'));
+      return;
+    }
+    const fixCmd = new FixCommand();
+    await fixCmd.execute(repoPath);
+  });
+
 // Help command
 program
   .command('help')
@@ -60,6 +75,7 @@ program
     
     program.help();
   });
+
 
 // Default action
 program.action(() => {

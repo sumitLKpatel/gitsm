@@ -13,11 +13,11 @@ export class PromptUtils {
       return keys[0];
     }
 
-    // Clean display - only show key names
+    // Clean display - show relative paths for clarity
     const choices = keys.map(key => ({
-      name: key.name,
+      name: `${key.name} (${key.relativePath})`,
       value: key,
-      short: key.name
+      short: key.relativePath
     }));
 
     const { selectedKey } = await inquirer.prompt([

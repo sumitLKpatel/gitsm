@@ -1,6 +1,7 @@
 export interface SSHKey {
   name: string;
-  path: string;
+  path: string;          // Absolute path
+  relativePath: string;  // Relative path with ~ notation
   publicKeyPath: string;
   fingerprint?: string;
   type: 'rsa' | 'ed25519' | 'ecdsa' | 'dsa';

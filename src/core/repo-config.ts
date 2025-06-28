@@ -37,22 +37,23 @@ export class RepoConfigManager {
 
   async setRepoConfig(repoPath: string, sshKeyPath: string, remoteUrl: string): Promise<void> {
     const config = await this.loadConfig();
-    
     config.repositories[repoPath] = {
       repoPath,
       sshKeyPath,
       remoteUrl,
       createdAt: new Date()
     };
-
     await this.saveConfig(config);
-    await this.setupRepoGitConfig(repoPath, sshKeyPath);
   }
 
   private async setupRepoGitConfig(repoPath: string, sshKeyPath: string): Promise<void> {
     const gitConfigPath = path.join(repoPath, '.git', 'config');
     
     if (await fs.pathExists(gitConfigPath)) {
+      if (!await fs.pathExists(sshKeyPath)) {
+        console.warn(`SSH key file does not exist: ${sshKeyPath}. Not setting core.sshCommand.`);
+        return;
+      }
       // Create a custom git wrapper script for this repo
       const wrapperScript = await this.createGitWrapper(repoPath, sshKeyPath);
       
