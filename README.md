@@ -6,10 +6,27 @@
 ![node](https://img.shields.io/badge/node-%3E=18.x-brightgreen?logo=node.js)
 
 
+🔐 SSH Key Management for Git, Simplified 
 
-🔑 **Seamless SSH key management per Git repository**
+Automatically configure different SSH keys for different repositories using our powerful Git wrapper.  
+No more editing ~/.ssh/config—just clone and go.
 
-SSH Key Management for Git, Simplified. Automatically configure different SSH keys for different repositories with our powerful Git wrapper. Eliminate manual setup and streamline your workflow.
+✅ Works just like Git. Use push, pull, commit, etc., without changing your workflow.
+
+🚀 Example
+
+```bash
+gitsm clone git@github.com:user/private-repo.git
+```
+→ Prompts you to select an existing SSH key from your ~/.ssh folder  
+→ Automatically links the key to this repo  
+→ Then you can now use Git as usual:
+
+```bash
+cd private-repo  
+git pull  
+git push  
+```
 
 ---
 

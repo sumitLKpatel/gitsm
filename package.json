@@ -1,7 +1,7 @@
 {
   "name": "gitsm",
-  "version": "1.0.0",
-  "description": "Git SSH Manager - Seamless SSH key management per repository",
+  "version": "1.0.1",
+  "description": "Git SSH Manager - Seamless SSH key management for Git repositories",
   "main": "dist/index.js",
   "bin": {
     "gitsm": "bin/gitsm.js"
@@ -17,11 +17,22 @@
     "git",
     "ssh",
     "cli",
+    "git ssh Manager",
+    "ssh key management",
     "repository",
     "key-management"
   ],
-  "author": "Your Name",
+  "author": "Sumit Patel",
+  "email": "sumit117.it@gmail.com",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sumitLKpatel/gitsm"
+  },
+  "bugs": {
+    "url": "https://github.com/sumitLKpatel/gitsm/issues"
+  },
+  "homepage": "https://github.com/sumitLKpatel/gitsm#readme",
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^11.0.0",
