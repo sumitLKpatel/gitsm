@@ -1,7 +1,7 @@
 {
   "name": "gitsm",
-  "version": "1.0.1",
-  "description": "Git SSH Manager - Seamless SSH key management for Git repositories",
+  "version": "1.0.3",
+  "description": "Git SSH Manager - Seamless SSH key management for repository",
   "main": "dist/index.js",
   "bin": {
     "gitsm": "bin/gitsm.js"

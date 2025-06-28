@@ -10,8 +10,8 @@ const program = new Command();
 
 program
   .name('gitsm')
-  .description('Git SSH Manager - Seamless SSH key management per repository')
-  .version('1.0.0');
+  .description('Git SSH Manager - Seamless SSH key management for repository')
+  .version('1.0.3');
 
 // Clone command
 program
