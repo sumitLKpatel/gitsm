@@ -1,4 +1,4 @@
-// src/commands/clone.ts - Enhanced with better error handling and HTTPS fallback
+// src/commands/clone.ts
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import chalk from 'chalk';
@@ -43,11 +43,10 @@ export class CloneCommand {
       if (repoUrl.startsWith('git@')) {
         const sshSuccess = await this.trySSHClone(repoUrl, fullTargetPath);
         if (!sshSuccess) {
-          // Check if directory exists and is not empty before HTTPS fallback
           if (await fs.pathExists(fullTargetPath)) {
             const files = await fs.readdir(fullTargetPath);
             if (files.length > 0) {
-              console.error(chalk.red(`fatal: destination path '${targetDir}' already exists and is not an empty directory after SSH clone failure.`));
+              console.error(chalk.red(`fatal: destination path '${targetDir}' already exists and is not an empty directory.`));
               process.exit(1);
             }
           }
@@ -69,10 +68,6 @@ export class CloneCommand {
 
   private async trySSHClone(repoUrl: string, fullTargetPath: string): Promise<boolean> {
     try {
-      // Remove or reduce debug/log output for cleaner CLI
-      // ... keep only essential user-facing messages and errors ...
-      
-      // Discover available SSH keys
       const sshKeys = await this.sshManager.discoverSSHKeys();
       
       if (sshKeys.length === 0) {
@@ -84,10 +79,8 @@ export class CloneCommand {
       console.log(chalk.blue('🔑 Select SSH key for this repository:'));
       const selectedKey = await this.promptUtils.selectSSHKey(sshKeys);
 
-      // Test SSH key before cloning
       if (!await fs.pathExists(selectedKey.path)) {
         console.log(chalk.red(`Selected SSH key does not exist: ${selectedKey.path}`));
-        // Re-discover keys and prompt again
         const availableKeys = await this.sshManager.discoverSSHKeys();
         if (availableKeys.length === 0) {
           console.log(chalk.red('No valid SSH keys available. Aborting.'));
@@ -98,18 +91,15 @@ export class CloneCommand {
         selectedKey.relativePath = newKey.relativePath;
       }
       
-      // Test SSH key before cloning
-      console.log(chalk.blue('🧪 Testing SSH connection...'));
+      // Test SSH connection
+      console.log(chalk.blue('🔐 Testing SSH connection...'));
       const testResult = await this.sshManager.testSSHKey(selectedKey.path, repoUrl);
       
       if (!testResult.success) {
         console.log(chalk.yellow(`⚠️  SSH test failed: ${testResult.error}`));
-        
-        // Ask user if they want to try anyway
         const tryAnyway = await this.promptUtils.confirmAction(
           'SSH test failed. Try cloning anyway?'
         );
-        
         if (!tryAnyway) {
           return false;
         }
@@ -119,17 +109,8 @@ export class CloneCommand {
 
       // Clone with selected SSH key
       await this.gitWrapper.clone(repoUrl, fullTargetPath, selectedKey.path);
-
-      // Configure repository
       await this.gitWrapper.configureRepo(fullTargetPath, selectedKey.path);
-
-      // Save configuration
       await this.configManager.setRepoConfig(fullTargetPath, selectedKey.path, repoUrl);
-
-      // Immediately run fix logic to ensure SSH config is correct
-      const { FixCommand } = require('./fix');
-      const fixCmd = new FixCommand();
-      await fixCmd.execute(fullTargetPath);
 
       console.log(chalk.green(`✅ Repository cloned successfully with SSH key: ${selectedKey.relativePath}`));
       return true;

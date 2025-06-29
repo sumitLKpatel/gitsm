@@ -23,6 +23,14 @@
 
 --- 
 
+## 👀 See It In Action
+
+![GITSM Demo](assets/gitsm.gif)
+
+*In this demo: Clone a repository, select an SSH key interactively, and see automatic configuration in action.*
+
+--- 
+
 ## ✨ Features
 
 - 🔍 **Auto-discovery** of SSH keys in your `~/.ssh` directory.
@@ -42,7 +50,7 @@
 npm install -g gitsm
 ```
 
---- 
+---
 
 ## 🚀 Quick Start
 

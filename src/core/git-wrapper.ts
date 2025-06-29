@@ -7,10 +7,6 @@ import chalk from 'chalk';
 export class GitWrapper {
   async clone(repoUrl: string, targetDir: string, sshKeyPath?: string): Promise<void> {
     try {
-      // Debug: Log the URL being cloned
-      console.log(chalk.blue(`🔍 Debug: Cloning repository URL: ${repoUrl}`));
-      console.log(chalk.blue(`🔍 Debug: Target directory: ${targetDir}`));
-      
       if (sshKeyPath && repoUrl.startsWith('git@')) {
         // Try SSH clone first
         await this.cloneWithSSH(repoUrl, targetDir, sshKeyPath);
@@ -18,15 +14,6 @@ export class GitWrapper {
         // Use HTTPS clone
         await this.cloneWithHTTPS(repoUrl, targetDir);
       }
-      
-      // Debug: Check what remote was actually set after cloning
-      try {
-        const actualRemote = await this.getRemoteUrl(targetDir);
-        console.log(chalk.blue(`🔍 Debug: Actual remote URL after clone: ${actualRemote}`));
-      } catch (debugError) {
-        console.log(chalk.yellow(`⚠️  Could not check remote URL: ${debugError}`));
-      }
-      
     } catch (error) {
       // If SSH fails, try HTTPS fallback
       if (sshKeyPath && repoUrl.startsWith('git@')) {
@@ -47,30 +34,28 @@ export class GitWrapper {
       if (!await fs.pathExists(normalizedPath)) {
         throw new Error(`SSH key file does not exist: ${normalizedPath}`);
       }
+      
       // Use GIT_SSH_COMMAND for the initial clone
       const sshCommand = `ssh -i "${normalizedPath}" -F /dev/null -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`;
-      console.log('[DEBUG] GIT_SSH_COMMAND:', sshCommand);
-      console.log(chalk.blue(`Cloning with SSH key: "${normalizedPath}"`));
+      
+      // Clone the repository
+      console.log(chalk.blue('🚀 Cloning repository...'));
       execSync(`git clone "${repoUrl}" "${targetDir}"`, {
         stdio: 'inherit',
         env: { ...process.env, GIT_SSH_COMMAND: sshCommand }
       });
-      // After clone, set the correct core.sshCommand in the new repo
-      console.log('[DEBUG] Original SSH key path:', normalizedPath);
-      const normalizedPathForConfig = normalizedPath.replace(/\\/g, '/');
-      console.log('[DEBUG] Normalized SSH key path for config:', normalizedPathForConfig);
-      const sshConfigValue = `ssh -i "${normalizedPathForConfig}" -F /dev/null -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`;
-      console.log('[DEBUG] Setting core.sshCommand to:', sshConfigValue);
+      
+      // Configure SSH command in the repository
       try {
-        const fs = require('fs');
-        const path = require('path');
         const configPath = path.join(targetDir, '.git', 'config');
         let configText = fs.readFileSync(configPath, 'utf-8');
+        const normalizedPathForConfig = normalizedPath.replace(/\\/g, '/');
+        const sshConfigValue = `ssh -i "${normalizedPathForConfig}" -F /dev/null -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`;
+        
         // Find [core] section
         const coreSectionRegex = /(^|\n)\[core\][^\[]*/;
         const match = configText.match(coreSectionRegex);
         if (match) {
-          // Replace or add sshCommand line in [core]
           let coreBlock = match[0];
           if (/sshCommand\s*=/.test(coreBlock)) {
             coreBlock = coreBlock.replace(/sshCommand\s*=.*(\n|$)/, `sshCommand = ${sshConfigValue}\n`);
@@ -79,13 +64,11 @@ export class GitWrapper {
           }
           configText = configText.replace(coreSectionRegex, coreBlock);
         } else {
-          // No [core] section, add it
           configText += `\n[core]\nsshCommand = ${sshConfigValue}\n`;
         }
         fs.writeFileSync(configPath, configText, 'utf-8');
-        console.log('[DEBUG] .git/config after write:\n', fs.readFileSync(configPath, 'utf-8'));
       } catch (configError) {
-        console.warn(chalk.yellow(`[WARNING] Repository cloned, but failed to set core.sshCommand: ${configError}`));
+        console.warn(chalk.yellow(`Repository cloned, but failed to set SSH configuration: ${configError}`));
       }
     } catch (error) {
       throw new Error(`SSH clone failed: ${error}`);
@@ -94,7 +77,7 @@ export class GitWrapper {
 
   private async cloneWithHTTPS(repoUrl: string, targetDir: string): Promise<void> {
     try {
-      console.log(chalk.blue('Cloning with HTTPS...'));
+      console.log(chalk.blue('🌐 Cloning with HTTPS...'));
       console.log(chalk.gray('You may be prompted for credentials'));
       
       // Simple HTTPS clone
