@@ -1,7 +1,7 @@
 # Git SSH Key Manager (gitsm)
 
 ![Git](https://img.shields.io/badge/git-F05032?style=flat&logo=git&logoColor=white)
-![gitsm](https://img.shields.io/badge/gitsm-v1.0.0-blue)
+![gitsm](https://img.shields.io/badge/gitsm-v1.0.34-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![node](https://img.shields.io/badge/node-%3E=18.x-brightgreen?logo=node.js)
@@ -100,6 +100,12 @@ gitsm fix /path/to/your/repo
   - Clones a Git repository and prompts for SSH key selection.
   - `--dir <directory>`: Specify a target directory.
 
+- `convert [repoPath]`
+  - Converts an existing repository to use gitsm SSH key management
+  - If no path provided, uses the current directory
+  - Helps switch from HTTPS to SSH if needed
+  - Interactive SSH key selection and testing
+
 - `list keys`
   - Lists all available SSH keys found in `~/.ssh`.
 
@@ -108,6 +114,11 @@ gitsm fix /path/to/your/repo
 
 - `fix <repoPath>`
   - Repairs the SSH key configuration for a specific repository.
+
+- `upgrade`
+  - Check for and install the latest version of gitsm
+  - Automatically updates the global installation
+  - Shows helpful messages if manual intervention is needed
 
 - `help`
   - Shows help and usage examples.

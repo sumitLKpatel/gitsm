@@ -33,16 +33,30 @@ export class CloneCommand {
         process.exit(1);
       }
 
-      // Force HTTPS if requested
-      if (options.https) {
+      // Determine clone method
+      let useHttps = options.https;
+      if (!useHttps && !repoUrl.startsWith('git@')) {
+        // For HTTPS URLs, confirm if user wants to proceed with HTTPS
+        useHttps = await this.promptUtils.confirmAction(
+          'This is an HTTPS URL. Would you like to proceed with HTTPS clone? (You will need a Personal Access Token for private repos)'
+        );
+        if (!useHttps) {
+          console.log(chalk.yellow('Clone cancelled.'));
+          process.exit(1);
+        }
+      }
+
+      // Use HTTPS if requested
+      if (useHttps) {
         await this.cloneWithHTTPS(repoUrl, fullTargetPath);
         return;
       }
 
-      // Try SSH approach first (if SSH URL)
+      // Try SSH approach for SSH URLs
       if (repoUrl.startsWith('git@')) {
         const sshSuccess = await this.trySSHClone(repoUrl, fullTargetPath);
         if (!sshSuccess) {
+          // Check if directory exists and is not empty before HTTPS fallback
           if (await fs.pathExists(fullTargetPath)) {
             const files = await fs.readdir(fullTargetPath);
             if (files.length > 0) {
@@ -50,8 +64,18 @@ export class CloneCommand {
               process.exit(1);
             }
           }
-          // Fallback to HTTPS
-          console.log(chalk.yellow('\n🔄 Falling back to HTTPS clone...'));
+
+          // Ask user if they want to try HTTPS
+          const tryHTTPS = await this.promptUtils.confirmAction(
+            'SSH clone failed. Would you like to try HTTPS instead?'
+          );
+
+          if (!tryHTTPS) {
+            console.log(chalk.yellow('Clone cancelled.'));
+            process.exit(1);
+          }
+
+          // Switch to HTTPS with user confirmation
           const httpsUrl = this.gitWrapper.convertToHTTPS(repoUrl);
           await this.cloneWithHTTPS(httpsUrl, fullTargetPath);
         }
@@ -128,9 +152,6 @@ export class CloneCommand {
         ? this.gitWrapper.convertToHTTPS(repoUrl)
         : repoUrl;
 
-      console.log(chalk.blue('🌐 Cloning with HTTPS...'));
-      console.log(chalk.gray('You may be prompted for your Git credentials'));
-
       // Clone with HTTPS
       await this.gitWrapper.clone(httpsUrl, fullTargetPath);
 
@@ -139,9 +160,6 @@ export class CloneCommand {
 
       // Save configuration
       await this.configManager.setRepoConfig(fullTargetPath, '', httpsUrl);
-
-      console.log(chalk.green('✅ Repository cloned successfully with HTTPS'));
-      console.log(chalk.blue('💡 Tip: Set up SSH keys for easier authentication in future'));
 
     } catch (error) {
       // Provide helpful error messages

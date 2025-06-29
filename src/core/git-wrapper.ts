@@ -10,19 +10,15 @@ export class GitWrapper {
       if (sshKeyPath && repoUrl.startsWith('git@')) {
         // Try SSH clone first
         await this.cloneWithSSH(repoUrl, targetDir, sshKeyPath);
-      } else {
-        // Use HTTPS clone
+      } else if (!repoUrl.startsWith('git@')) {
+        // Only use HTTPS if URL is already HTTPS
         await this.cloneWithHTTPS(repoUrl, targetDir);
+      } else {
+        throw new Error('SSH key is required for SSH URLs');
       }
     } catch (error) {
-      // If SSH fails, try HTTPS fallback
-      if (sshKeyPath && repoUrl.startsWith('git@')) {
-        console.log(chalk.yellow('SSH clone failed, trying HTTPS...'));
-        const httpsUrl = this.convertToHTTPS(repoUrl);
-        await this.cloneWithHTTPS(httpsUrl, targetDir);
-      } else {
-        throw error;
-      }
+      // Don't auto-fallback to HTTPS, let the calling code handle it
+      throw error;
     }
   }
 
@@ -76,17 +72,17 @@ export class GitWrapper {
   }
 
   private async cloneWithHTTPS(repoUrl: string, targetDir: string): Promise<void> {
+    const httpsUrl = this.convertToHTTPS(repoUrl);
+    console.log(chalk.blue('🌐 Cloning with HTTPS...'));
+    console.log(chalk.yellow('You will need:'));
+    console.log(chalk.gray('1. Your GitHub/GitLab username'));
+    console.log(chalk.gray('2. A Personal Access Token (NOT your password)'));
+    console.log(chalk.gray('   Get one from: GitHub -> Settings -> Developer Settings -> Personal Access Tokens'));
+    
     try {
-      console.log(chalk.blue('🌐 Cloning with HTTPS...'));
-      console.log(chalk.gray('You may be prompted for credentials'));
-      
-      // Simple HTTPS clone
-      execSync(`git clone "${repoUrl}" "${targetDir}"`, {
-        stdio: 'inherit'
-      });
-      
-    } catch (error) {
-      throw new Error(`HTTPS clone failed: ${error}`);
+      execSync(`git clone "${httpsUrl}" "${targetDir}"`, { stdio: 'inherit' });
+    } catch (error: any) {
+      throw new Error(`HTTPS clone failed: ${error?.message || 'Unknown error'}`);
     }
   }
 
@@ -233,6 +229,14 @@ exec ssh -i "${sshKeyPath}" -F /dev/null -o IdentitiesOnly=yes -o StrictHostKeyC
       }
     } catch (error) {
       console.warn(chalk.yellow(`Could not switch to HTTPS: ${error}`));
+    }
+  }
+
+  async setRemoteUrl(repoPath: string, url: string): Promise<void> {
+    try {
+      execSync(`git -C "${repoPath}" remote set-url origin "${url}"`, { stdio: 'pipe' });
+    } catch (error) {
+      throw new Error(`Failed to set remote URL: ${error}`);
     }
   }
 }

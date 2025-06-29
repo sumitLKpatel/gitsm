@@ -1,6 +1,6 @@
 {
   "name": "gitsm",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "description": "Git SSH Key Manager - Seamless SSH key management for repository",
   "main": "dist/index.js",
   "bin": {
