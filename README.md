@@ -25,7 +25,7 @@
 
 ## 👀 See It In Action
 
-![GITSM Demo](assets/gitsm.gif)
+![GITSM Demo](https://ucarecdn.com/0ca63af1-9c8f-4ec9-8889-86908d01886d/gitsm.gif)
 
 *In this demo: Clone a repository, select an SSH key interactively, and see automatic configuration in action.*
 
