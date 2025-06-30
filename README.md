@@ -1,10 +1,10 @@
 # Git SSH Key Manager (gitsm)
 
 ![Git](https://img.shields.io/badge/git-F05032?style=flat&logo=git&logoColor=white)
-![gitsm](https://img.shields.io/badge/gitsm-v1.0.34-blue)
+![gitsm](https://img.shields.io/badge/gitsm-v1.0.35-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
-![node](https://img.shields.io/badge/node-%3E=18.x-brightgreen?logo=node.js)
+![node](https://img.shields.io/badge/node-%3E=16.x-brightgreen?logo=node.js)
 
 **🔐 SSH Key Management for Git, Simplified.**
 
@@ -127,7 +127,7 @@ gitsm fix /path/to/your/repo
 
 ## 🛠️ Prerequisites
 
-- **Node.js**: Version 18.x or higher.
+- **Node.js**: Version 16.x or higher.
 - **Git**: Must be installed and available in your system's PATH.
 - **SSH Keys**: You should have already generated SSH keys and added them to your Git provider (GitHub, GitLab, etc.).
 
