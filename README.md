@@ -1,7 +1,7 @@
 # Git SSH Key Manager (gitsm)
 
 ![Git](https://img.shields.io/badge/git-F05032?style=flat&logo=git&logoColor=white)
-![gitsm](https://img.shields.io/badge/gitsm-v1.0.35-blue)
+![gitsm](https://img.shields.io/badge/gitsm-v2.0.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![node](https://img.shields.io/badge/node-%3E=16.x-brightgreen?logo=node.js)

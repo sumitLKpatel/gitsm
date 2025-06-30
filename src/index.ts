@@ -12,7 +12,7 @@ const program = new Command();
 program
   .name('gitsm')
   .description('Git SSH Key Manager - Seamless SSH key management for repository')
-  .version('1.0.35', '-v, --version', 'Show version information');
+  .version('2.0.0', '-v, --version', 'Show version information');
 
 // Clone command
 program
@@ -80,7 +80,7 @@ program
     try {
       // Get current version from npm registry
       const latestVersion = execSync('npm show gitsm version', { encoding: 'utf8' }).trim();
-      const currentVersion = process.env.npm_package_version || '1.0.34';
+      const currentVersion = process.env.npm_package_version || '2.0.0'; // Fallback to a default version if not set
       
       if (latestVersion === currentVersion) {
         console.log(chalk.green('✓ You are already using the latest version:', currentVersion));
