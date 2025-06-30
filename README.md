@@ -1,7 +1,7 @@
 # Git SSH Key Manager (gitsm)
 
 ![Git](https://img.shields.io/badge/git-F05032?style=flat&logo=git&logoColor=white)
-![gitsm](https://img.shields.io/badge/gitsm-v2.0.0-blue)
+![gitsm](https://img.shields.io/badge/gitsm-v2.0.1-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 ![node](https://img.shields.io/badge/node-%3E=16.x-brightgreen?logo=node.js)
@@ -130,41 +130,6 @@ gitsm fix /path/to/your/repo
 - **Node.js**: Version 16.x or higher.
 - **Git**: Must be installed and available in your system's PATH.
 - **SSH Keys**: You should have already generated SSH keys and added them to your Git provider (GitHub, GitLab, etc.).
-
---- 
-
-## 🔍 How It Works
-
-`gitsm` acts as a wrapper around Git. When you clone a repository, it:
-1.  **Discovers SSH Keys**: Scans your `~/.ssh` directory for private keys.
-2.  **Prompts for Selection**: Asks you to choose which key to associate with the repository.
-3.  **Configures Git**: Modifies the repository's local `.git/config` to set the `core.sshCommand` to point to the selected key.
-4.  **Delegates to Git**: All other commands are passed directly to Git, so your workflow remains unchanged.
-
-This approach avoids global configuration changes and provides fine-grained, per-repository control.
-
---- 
-
-## 🐛 Troubleshooting
-
-### SSH Key Path Errors on Windows
-
-If you encounter an error like `Warning: Identity file C:Users... not accessible: No such file or directory`, it often means the path in your Git configuration is malformed.
-
-**Solution:**
-Run the `fix` command on the repository path.
-```bash
-gitsm fix C:\Users\YourUser\path\to\repo
-```
-This command automatically corrects the path to use forward slashes (`/`) and ensures it is properly quoted, which is required for Git on Windows.
-
-### "Permission Denied (publickey)"
-
-This error means the SSH key you selected is not authorized for the repository.
-
-**Solutions:**
-1.  **Verify the Key**: Ensure you have added the public key (e.g., `id_ed25519.pub`) to your GitHub/GitLab account.
-2.  **Select the Correct Key**: Run `gitsm fix` and choose the correct key for the repository.
 
 --- 
 
