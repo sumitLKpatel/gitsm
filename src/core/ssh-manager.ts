@@ -170,68 +170,96 @@ export class SSHManager {
     }
   }
 
-  async testSSHKey(keyPath: string, repoUrl: string): Promise<{success: boolean, error?: string}> {
-    try {
-      const host = this.extractHostFromUrl(repoUrl);
-      
-      // Test SSH connection with timeout
-      const result = execSync(`ssh -i "${keyPath}" -T -o ConnectTimeout=10 -o StrictHostKeyChecking=no git@${host}`, { 
-        stdio: 'pipe',
-        timeout: 15000,
-        encoding: 'utf8'
-      });
-      
-      // This shouldn't happen for GitHub, but if it does, it's success
-      return { success: true };
-    } catch (error: any) {
-      // GitHub and other Git providers return exit code 1 with a success message
-      // Check if the error output contains success indicators
-      const output = error.stdout || error.stderr || error.message || '';
-      
-      // Common success patterns from different Git providers
-      const successPatterns = [
-        /You've successfully authenticated/i,           // GitHub
-        /successfully authenticated/i,                  // General
-        /Welcome to GitLab/i,                          // GitLab
-        /logged in as/i,                               // Bitbucket
-        /Hi \w+!/i,                                    // GitHub personal greeting
-        /You can use git or hg to connect/i            // Bitbucket
-      ];
-      
-      const isSuccessfulAuth = successPatterns.some(pattern => 
-        pattern.test(output)
-      );
-      
-      if (isSuccessfulAuth) {
-        return { success: true };
-      }
-      
-      // If no success pattern found, it's a real failure
-      return { 
-        success: false, 
-        error: `SSH authentication failed: ${output || error.message}` 
+  private extractRepoInfo(repoUrl: string): { host: string; owner: string; repo: string } {
+    // Handle SSH URLs (git@github.com:owner/repo.git)
+    const sshMatch = repoUrl.match(/git@([^:]+):([^\/]+)\/([^\.]+)(?:\.git)?$/);
+    if (sshMatch) {
+      return {
+        host: sshMatch[1],
+        owner: sshMatch[2],
+        repo: sshMatch[3]
       };
     }
+
+    // Handle HTTPS URLs (https://github.com/owner/repo.git)
+    const httpsMatch = repoUrl.match(/https:\/\/([^\/]+)\/([^\/]+)\/([^\.]+)(?:\.git)?$/);
+    if (httpsMatch) {
+      return {
+        host: httpsMatch[1],
+        owner: httpsMatch[2],
+        repo: httpsMatch[3]
+      };
+    }
+
+    throw new Error(`Invalid repository URL format: ${repoUrl}`);
   }
 
-  private extractHostFromUrl(repoUrl: string): string {
+  async testSSHKey(keyPath: string, repoUrl: string): Promise<{success: boolean, error?: string}> {
     try {
-      // Handle different URL formats
-      if (repoUrl.startsWith('git@')) {
-        // git@github.com:user/repo.git
-        const match = repoUrl.match(/git@([^:]+):/);
-        return match ? match[1] : 'github.com';
-      } else if (repoUrl.startsWith('https://')) {
-        // https://github.com/user/repo.git
-        const url = new URL(repoUrl);
-        return url.hostname;
-      }
+      const { host, owner, repo } = this.extractRepoInfo(repoUrl);
       
-      // Default fallback
-      return 'github.com';
-    } catch (error) {
-      console.warn(chalk.yellow(`Could not extract host from URL: ${error}`));
-      return 'github.com';
+      // First test basic SSH authentication
+      try {
+        execSync(`ssh -i "${keyPath}" -T -o ConnectTimeout=10 -o StrictHostKeyChecking=no git@${host}`, { 
+          stdio: 'pipe',
+          timeout: 15000,
+          encoding: 'utf8'
+        });
+      } catch (error: any) {
+        // Check for success patterns in the error output
+        const output = error.stdout || error.stderr || error.message || '';
+        const basicAuthSuccess = [
+          /You've successfully authenticated/i,           // GitHub
+          /successfully authenticated/i,                  // General
+          /Welcome to GitLab/i,                          // GitLab
+          /logged in as/i,                               // Bitbucket
+          /Hi \w+!/i,                                    // GitHub personal greeting
+          /You can use git or hg to connect/i            // Bitbucket
+        ].some(pattern => pattern.test(output));
+
+        if (!basicAuthSuccess) {
+          return { 
+            success: false, 
+            error: `Failed to authenticate with ${host}. Please ensure your SSH key is added to your account.` 
+          };
+        }
+      }
+
+      // Now test repository-specific access using git ls-remote
+      try {
+        const sshCommand = process.platform === 'win32'
+          ? `set GIT_SSH_COMMAND=ssh -i "${keyPath}" -o StrictHostKeyChecking=no && git ls-remote git@${host}:${owner}/${repo}.git HEAD`
+          : `GIT_SSH_COMMAND="ssh -i '${keyPath}' -o StrictHostKeyChecking=no" git ls-remote git@${host}:${owner}/${repo}.git HEAD`;
+
+        execSync(sshCommand, { 
+          stdio: 'pipe',
+          timeout: 15000,
+          encoding: 'utf8'
+        });
+        return { success: true };
+      } catch (error: any) {
+        const output = error.toString().toLowerCase();
+        if (output.includes('permission denied') || output.includes('access denied')) {
+          return { 
+            success: false, 
+            error: `You don't have access to ${owner}/${repo}. Please check your repository permissions.` 
+          };
+        } else if (output.includes('repository not found')) {
+          return { 
+            success: false, 
+            error: `Repository ${owner}/${repo} not found. Please check if the repository exists and you have the correct URL.` 
+          };
+        }
+        return { 
+          success: false, 
+          error: `Failed to verify repository access: ${error.message || error}` 
+        };
+      }
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: `SSH test failed: ${error instanceof Error ? error.message : String(error)}` 
+      };
     }
   }
 }

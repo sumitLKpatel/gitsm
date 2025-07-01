@@ -6,6 +6,11 @@ import { GitWrapper } from '../core/git-wrapper';
 import { RepoConfigManager } from '../core/repo-config';
 import { PromptUtils } from '../utils/prompt-utils';
 
+interface ConversionResult {
+    success: boolean;
+    error?: string;
+}
+
 export class ConvertCommand {
     private sshManager: SSHManager;
     private gitWrapper: GitWrapper;
@@ -17,6 +22,19 @@ export class ConvertCommand {
         this.gitWrapper = new GitWrapper();
         this.configManager = new RepoConfigManager();
         this.promptUtils = new PromptUtils();
+    }
+
+    private convertHttpsToSsh(httpsUrl: string): string {
+        try {
+            // Convert https://github.com/user/repo.git to git@github.com:user/repo.git
+            const url = new URL(httpsUrl);
+            const pathParts = url.pathname.split('/');
+            const user = pathParts[1];
+            const repo = pathParts[2].replace(/\.git$/, ''); // Remove .git if present
+            return `git@${url.hostname}:${user}/${repo}.git`;
+        } catch (error) {
+            throw new Error(`Invalid HTTPS URL: ${httpsUrl}`);
+        }
     }
 
     async execute(repoPath: string = '.'): Promise<void> {
@@ -39,57 +57,88 @@ export class ConvertCommand {
             console.log(chalk.blue(`Converting repository: ${fullRepoPath}`));
             console.log(chalk.gray(`Current remote URL: ${remoteUrl}`));
 
-            // Handle HTTPS to SSH conversion if needed
-            if (!remoteUrl.startsWith('git@')) {
+            // Discover available SSH keys first
+            const sshKeys = await this.sshManager.discoverSSHKeys();
+            if (sshKeys.length === 0) {
+                console.log(chalk.red('❌ No SSH keys found in ~/.ssh directory'));
+                console.log(chalk.gray('Please generate an SSH key first and add it to your Git provider'));
+                console.log(chalk.gray('You can use: ssh-keygen -t ed25519 -C "your@email.com"'));
+                return;
+            }
+
+            // Handle URL conversion if needed
+            let targetUrl = remoteUrl;
+            let urlChanged = false;
+
+            if (remoteUrl.startsWith('https://')) {
                 const switchToSSH = await this.promptUtils.confirmAction(
                     'Repository is using HTTPS. Would you like to switch to SSH?'
                 );
 
                 if (switchToSSH) {
-                    const sshUrl = this.gitWrapper.convertToHTTPS(remoteUrl);
-                    await this.gitWrapper.setRemoteUrl(fullRepoPath, sshUrl);
-                    console.log(chalk.green('✅ Switched to SSH remote URL'));
+                    try {
+                        targetUrl = this.convertHttpsToSsh(remoteUrl);
+                        console.log(chalk.blue(`Will convert to SSH URL: ${targetUrl}`));
+                        urlChanged = true;
+                    } catch (error) {
+                        console.error(chalk.red(`❌ ${error instanceof Error ? error.message : String(error)}`));
+                        return;
+                    }
                 } else {
-                    console.log(chalk.yellow('Keeping HTTPS remote URL'));
+                    console.log(chalk.yellow('⚠️ Keeping HTTPS configuration'));
+                    console.log(chalk.gray('Note: HTTPS authentication might require a Personal Access Token'));
                     return;
                 }
             }
 
-            // Discover and select SSH key
-            const sshKeys = await this.sshManager.discoverSSHKeys();
-            
-            if (sshKeys.length === 0) {
-                console.log(chalk.yellow('⚠️  No SSH keys found'));
-                return;
-            }
-
-            console.log(chalk.blue('🔑 Select SSH key for this repository:'));
+            // Select SSH key
+            console.log(chalk.blue('\n🔑 Select SSH key to use with this repository:'));
             const selectedKey = await this.promptUtils.selectSSHKey(sshKeys);
-
-            // Test SSH connection
-            console.log(chalk.blue('🔐 Testing SSH connection...'));
-            const testResult = await this.sshManager.testSSHKey(selectedKey.path, remoteUrl);
+            
+            // Test SSH connection before making any changes
+            console.log(chalk.blue('\n🔐 Testing SSH connection...'));
+            const testResult = await this.sshManager.testSSHKey(selectedKey.path, targetUrl);
             
             if (!testResult.success) {
-                console.log(chalk.yellow(`⚠️  SSH test failed: ${testResult.error}`));
-                const tryAnyway = await this.promptUtils.confirmAction(
-                    'SSH test failed. Configure anyway?'
+                console.log(chalk.red('❌ SSH key test failed'));
+                console.log(chalk.yellow('This might mean:'));
+                console.log(chalk.gray('1. The SSH key is not added to your Git provider'));
+                console.log(chalk.gray('2. You don\'t have access to this repository'));
+                console.log(chalk.gray('3. The repository URL is incorrect'));
+                console.log(chalk.yellow('\nError details:', testResult.error));
+
+                const proceedAnyway = await this.promptUtils.confirmAction(
+                    'Would you like to proceed with the configuration anyway? (Not recommended)'
                 );
-                if (!tryAnyway) {
+
+                if (!proceedAnyway) {
+                    console.log(chalk.gray('Aborting. Please fix the SSH access issues and try again.'));
                     return;
                 }
+
+                console.log(chalk.yellow('⚠️ Proceeding with configuration despite SSH test failure'));
             } else {
-                console.log(chalk.green('✅ SSH connection successful'));
+                console.log(chalk.green('✅ SSH connection test successful'));
             }
 
-            // Configure repository
-            await this.gitWrapper.configureRepo(fullRepoPath, selectedKey.path);
-            await this.configManager.setRepoConfig(fullRepoPath, selectedKey.path, remoteUrl);
+            // Update configuration
+            console.log(chalk.blue('\n📝 Updating repository configuration...'));
 
-            console.log(chalk.green(`✅ Repository successfully converted to use gitsm with SSH key: ${selectedKey.relativePath}`));
+            // Update remote URL if it changed
+            if (urlChanged) {
+                await this.gitWrapper.setRemoteUrl(fullRepoPath, targetUrl);
+                console.log(chalk.green('✅ Updated remote URL to use SSH'));
+            }
+
+            // Configure repository to use the selected SSH key
+            await this.gitWrapper.configureRepo(fullRepoPath, selectedKey.path);
+            await this.configManager.setRepoConfig(fullRepoPath, selectedKey.path, targetUrl);
+
+            console.log(chalk.green(`\n✅ Repository successfully configured to use gitsm with SSH key: ${selectedKey.relativePath}`));
+            console.log(chalk.gray('You can now use gitsm commands with this repository'));
 
         } catch (error) {
-            console.error(chalk.red(`❌ Conversion failed: ${error}`));
+            console.error(chalk.red(`\n❌ Conversion failed: ${error instanceof Error ? error.message : String(error)}`));
             process.exit(1);
         }
     }
