@@ -12,39 +12,40 @@
 
 --- 
 
-## 🚩 Why gitsm?
+## Overview
 
 - Do you use **multiple GitHub or GitLab accounts**?
 - Do you need to use **different SSH keys for different projects**?
 - Are you tired of editing `.git/config` or `~/.ssh/config` by hand?
 - Do you want a **cross-platform** solution that "just works" on Windows, macOS, and Linux?
 
-**gitsm** is for you!
+**gitsm** is the solution you need.
 
 --- 
 
-## 👀 See It In Action
+## Demo
 
 ![GITSM Demo](https://ucarecdn.com/0ca63af1-9c8f-4ec9-8889-86908d01886d/gitsm.gif)
 
-*In this demo: Clone a repository, select an SSH key interactively, and see automatic configuration in action.*
+*Demonstration: Repository cloning with interactive SSH key selection and automatic configuration.*
 
 --- 
 
-## ✨ Features
+## Features
 
-- 🔍 **Auto-discovery** of SSH keys in your `~/.ssh` directory.
-- 🎯 **Per-repository SSH key configuration**—each repo can use a different key.
-- 🚀 **Smart cloning** with an interactive SSH key selection prompt.
-- 🛠️ **`fix` command** to repair broken or outdated SSH configurations.
-- 📋 **Repository listing** with associated SSH key information.
-- 🔐 **SSH key testing** to verify connectivity before use.
-- 💾 **Persistent configuration** that remembers your choices.
-- 🪟 **Full cross-platform support**: Windows, macOS, and Linux.
+- **Auto-discovery**: Automatic detection of SSH keys in your `~/.ssh` directory
+- **Per-repository Configuration**: Each repository can use a different SSH key
+- **Smart Cloning**: Interactive SSH key selection during clone operations
+- **Repository Management**: Commands to fix, convert, and manage repositories
+- **Key Management**: List and validate SSH keys across your system
+- **Security**: Built-in SSH key testing and validation
+- **State Management**: Persistent configuration storage
+- **Branch Operations**: Safe branch switching with state preservation
+- **Cross-platform**: Full support for Windows, macOS, and Linux
 
 --- 
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install -g gitsm
@@ -52,7 +53,7 @@ npm install -g gitsm
 
 ---
 
-## 🚀 Quick Start
+## Getting Started
 
 ### 1. Clone a Repository
 
@@ -92,54 +93,45 @@ gitsm fix /path/to/your/repo
 
 --- 
 
-## 📖 Usage
+## Usage
 
-### Commands
+### Command Reference
 
-- `clone <repo-url> [options]`
-  - Clones a Git repository and prompts for SSH key selection.
-  - `--dir <directory>`: Specify a target directory.
+| Command | Description | Options | Example |
+|---------|-------------|----------|---------|
+| `clone` | Clone a repository with SSH key selection | `--dir <directory>`: Target directory | `gitsm clone git@github.com:user/repo.git` |
+| `switch` | Safely switch branches with stash handling | `--force`: Force switch with changes<br>`--no-pull`: Skip pulling updates<br>`--create`: Create new branch | `gitsm switch feature-branch` |
+| `convert` | Convert existing repo to use gitsm | `[repoPath]`: Path to repository<br>(defaults to current directory) | `gitsm convert ~/projects/myrepo` |
+| `list keys` | Show available SSH keys | None | `gitsm list keys` |
+| `list repos` | Show gitsm-managed repositories | None | `gitsm list repos` |
+| `fix` | Repair SSH configuration | `<repoPath>`: Repository path | `gitsm fix ~/projects/myrepo` |
+| `upgrade` | Update gitsm to latest version | None | `gitsm upgrade` |
+| `help` | Show command help | `[command]`: Show help for specific command | `gitsm help switch` |
 
-- `convert [repoPath]`
-  - Converts an existing repository to use gitsm SSH key management
-  - If no path provided, uses the current directory
-  - Helps switch from HTTPS to SSH if needed
-  - Interactive SSH key selection and testing
 
-- `list keys`
-  - Lists all available SSH keys found in `~/.ssh`.
-
-- `list repos`
-  - Lists all repositories managed by `gitsm`.
-
-- `fix <repoPath>`
-  - Repairs the SSH key configuration for a specific repository.
-
-- `upgrade`
-  - Check for and install the latest version of gitsm
-  - Automatically updates the global installation
-  - Shows helpful messages if manual intervention is needed
-
-- `help`
-  - Shows help and usage examples.
 
 --- 
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 - **Node.js**: Version 16.x or higher.
 - **Git**: Must be installed and available in your system's PATH.
-- **SSH Keys**: You should have already generated SSH keys and added them to your Git provider (GitHub, GitLab, etc.).
+- **SSH Directory**: Must have a `.ssh` directory in your home folder:
+  - Unix/Linux/macOS: `~/.ssh`
+  - Windows: `C:\Users\YourUsername\.ssh`
+- **SSH Keys**: SSH keys must be in the root of your `.ssh` directory (not in subdirectories)
+  - Example: `~/.ssh/id_rsa`, `~/.ssh/id_ed25519`
+  - Public keys must have `.pub` extension: `id_rsa.pub`, `id_ed25519.pub`
 
 --- 
 
-## 📄 License
+## License
 
 This project is licensed under the **[MIT License](https://github.com/sumitLKpatel/gitsm?tab=MIT-1-ov-file)**.
 
 --- 
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to [open an issue](https://github.com/sumitLKpatel/gitsm/issues) or submit a pull request. Whether it's a bug report, feature request, or documentation improvement, all contributions are appreciated.
 
